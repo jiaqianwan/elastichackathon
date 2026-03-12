@@ -1,15 +1,15 @@
 from fastapi import APIRouter, Query
-from app.services.match_engine import search_items # Import your fuzzy search engine
+from app.services.match_engine import search_items
+from typing import Optional
 
 router = APIRouter()
 
 @router.get("/search")
 async def find_gear(
-    query: str = Query(..., description="The item to search for"), 
-    school: str = Query(..., description="The student's school")
+    query: Optional[str] = Query(""), 
+    school: Optional[str] = Query("All"), 
+    grade: Optional[str] = Query("All"), 
+    sort_by: Optional[str] = Query("relevance")
 ):
-    # Call the actual Elasticsearch engine for real results
-    results = search_items(query=query, school=school)
-    
-    # If no results are found in the engine, you can return an empty list or your mock data
-    return results
+    # This ensures "All" strings are passed correctly to your engine logic
+    return search_items(query=query, school=school, grade=grade, sort_by=sort_by)
