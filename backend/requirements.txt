@@ -13,4 +13,4 @@ python-multipart==0.0.9
 pydantic==2.6.3
 pydantic-settings==2.2.1
 qrcode==7.4.2
-pillow==10.2.0
+pillow>=10.2.0
