@@ -1,0 +1,47 @@
+@import "tailwindcss";
+
+/* In Tailwind v4, we use the @theme block to define custom variables 
+  that match your project's brand colors[cite: 175].
+*/
+@theme {
+  --color-hero-blue: #1d4ed8;
+  --color-hero-green: #16a34a;
+}
+
+/* Custom components to address the "Stigma of Hand-me-downs" 
+  by ensuring a high-quality, "Dignified" UI[cite: 5, 10, 15].
+*/
+@layer components {
+  /* The "Hero" Card: Used for Donation items and Impact stats [cite: 121, 123] */
+  .hero-card {
+    @apply bg-white rounded-[2rem] shadow-sm border border-slate-100 p-6 
+           transition-all duration-300 hover:shadow-md hover:border-blue-100;
+  }
+
+  /* Primary Buttons for the Donor and Recipient Journeys [cite: 125, 66] */
+  .btn-primary {
+    @apply bg-blue-600 text-white font-bold py-4 px-6 rounded-2xl 
+           active:scale-95 transition-transform flex items-center justify-center gap-2;
+  }
+
+  /* Secondary Buttons for less prominent actions [cite: 125] */
+  .btn-secondary {
+    @apply bg-slate-800 text-white font-bold py-4 px-6 rounded-2xl 
+           active:scale-95 transition-transform flex items-center justify-center gap-2;
+  }
+
+  /* Grade Badges for the AI Quality Grading system feedback [cite: 9, 129] */
+  .badge-grade-a {
+    @apply bg-green-100 text-green-700 text-xs font-black px-3 py-1 rounded-full uppercase;
+  }
+}
+
+/* Global styles for the "Kampong Spirit" community feel [cite: 13] */
+:root {
+  --app-height: 100%;
+}
+
+body {
+  @apply bg-slate-50 text-slate-900 antialiased;
+  overflow-x: hidden;
+}
