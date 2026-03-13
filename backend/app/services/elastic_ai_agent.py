@@ -6,6 +6,7 @@ import json
 from typing import Dict, Optional
 from fastapi import HTTPException
 import logging
+import random
 
 # Load environment variables
 load_dotenv()
@@ -156,8 +157,8 @@ def _parse_agent_response(content: str) -> Dict:
         raise ValueError(f"Invalid agent response format: {e}")
 
 def _get_demo_grading(filename: str) -> Dict:
-    """Return demo grading response (for testing without AI)"""
-    # Simple heuristic based on filename for demo variety
+    """Return realistic demo grading with variety based on filename"""
+    
     filename_lower = filename.lower()
     
     # Determine category from filename
@@ -169,23 +170,37 @@ def _get_demo_grading(filename: str) -> Dict:
         category, co2 = 'Uniform', 6.5
     elif any(word in filename_lower for word in ['calculator', 'pen', 'pencil', 'notebook']):
         category, co2 = 'Stationery', 2.0
-    elif any(word in filename_lower for word in ['ball', 'racket', 'sports']):
+    elif any(word in filename_lower for word in ['ball', 'racket', 'sports', 'fencing']):
         category, co2 = 'Sports Equipment', 8.0
     elif any(word in filename_lower for word in ['violin', 'guitar', 'instrument']):
         category, co2 = 'Musical Instruments', 15.0
+    elif any(word in filename_lower for word in ['trash', 'garbage', 'broken', 'dirty']):
+        category, co2 = 'Other', 0.0
     else:
         category, co2 = 'School Equipment', 5.2
     
-    # Determine grade from filename hints
-    if any(word in filename_lower for word in ['new', 'mint', 'excellent', 'pristine']):
-        grade, condition, score = 'Grade A', 'Like New', 9
+    # Determine grade - TRASH gets rejected, others get variety
+    if any(word in filename_lower for word in ['trash', 'garbage', 'broken', 'dirty', 'damaged', 'ripped']):
+        grade, condition, score = 'Rejected', 'Poor', random.randint(1, 3)
+        feedback = 'Not suitable for donation - shows significant wear, damage, or hygiene issues.'
+        dignity = False
+        co2 = 0.0
+    elif any(word in filename_lower for word in ['new', 'mint', 'excellent', 'pristine', 'perfect']):
+        grade, condition, score = 'Grade A', 'Like New', random.randint(8, 10)
         feedback = 'Excellent condition - minimal wear, clean and ready for immediate use.'
-    elif any(word in filename_lower for word in ['poor', 'damaged', 'torn', 'stained']):
-        grade, condition, score = 'Rejected', 'Poor', 3
-        feedback = 'Not suitable for donation - shows significant wear or damage.'
+        dignity = True
+    elif any(word in filename_lower for word in ['used', 'worn', 'old', 'faded']):
+        grade, condition, score = 'Grade B', 'Well Used', random.randint(5, 7)
+        feedback = 'Shows signs of use but still functional and acceptable for donation.'
+        dignity = True
     else:
-        grade, condition, score = 'Grade B', 'Gently Used', 7
-        feedback = 'Good condition with some signs of use, but fully functional and clean.'
+        # Add randomness for variety when filename doesn't give hints
+        choices = [
+            ('Grade A', 'Like New', random.randint(8, 10), 'Excellent condition - minimal wear, clean and ready for immediate use.', True),
+            ('Grade B', 'Gently Used', random.randint(6, 8), 'Good condition with some signs of use, but fully functional and clean.', True),
+            ('Grade B', 'Well Used', random.randint(5, 7), 'Shows signs of use but still functional and acceptable for donation.', True),
+        ]
+        grade, condition, score, feedback, dignity = random.choice(choices)
     
     return {
         'grade': grade,
@@ -193,10 +208,10 @@ def _get_demo_grading(filename: str) -> Dict:
         'category': category,
         'quality_score': score,
         'co2_saved': co2,
-        'dignity_check': grade != 'Rejected',
+        'dignity_check': dignity,
         'feedback': feedback,
         'acceptance_reason': 'Suitable for student use based on visual inspection.' if grade != 'Rejected' else 'Does not meet quality standards for donation.',
-        'grading_method': 'demo',
+        'grading_method': 'demo_enhanced',
         'agent_id': 'demo_fallback'
     }
 
