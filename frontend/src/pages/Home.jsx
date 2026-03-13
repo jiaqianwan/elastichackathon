@@ -226,19 +226,11 @@ const Home = () => {
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               flexDirection: 'column', gap: '0.75rem',
             }}>
-              <svg width="52" height="52" viewBox="0 0 52 52" fill="none">
-                <rect x="4" y="4" width="44" height="44" rx="2"
-                  stroke="var(--color-sage-dark)" strokeWidth="1" strokeDasharray="4 4"/>
-                <path d="M14 38 L22 28 L28 33 L34 24 L42 38 Z"
-                  fill="none" stroke="var(--color-sage-dark)" strokeWidth="1"/>
-                <circle cx="20" cy="21" r="4"
-                  stroke="var(--color-sage-dark)" strokeWidth="1" fill="none"/>
-              </svg>
-              <p style={{
-                fontFamily: 'var(--font-body)', fontSize: '0.6rem', fontWeight: 500,
-                letterSpacing: '0.18em', textTransform: 'uppercase',
-                color: 'var(--color-sage-dark)', margin: 0,
-              }}>Your image here</p>
+              <img
+                src="../../public/logo.svg"
+                alt="SecondHand Hero"
+                style={{ width: '70%', height: '70%', objectFit: 'contain' }}
+              />
             </div>
 
             {/* Floating caption tag */}
