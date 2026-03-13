@@ -1,2 +1,2 @@
-# elastichackathon
-Repo for elastic hackathon 2026
+# SecondHandHero
+Repository used for code for SecondHand Hero
