@@ -106,7 +106,7 @@ const Home = () => {
             width: 5, height: 5, borderRadius: '50%',
             background: 'var(--color-sage)', display: 'inline-block',
           }}/>
-          Singapore
+          Elastic Hackathon Singapore - Forge the Future
         </div>
       </nav>
 
