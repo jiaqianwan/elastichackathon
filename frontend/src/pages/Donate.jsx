@@ -3,173 +3,115 @@ import { Camera, RefreshCw, CheckCircle, AlertCircle } from 'lucide-react';
 import axios from 'axios';
 
 const Donate = () => {
+  const [name, setName] = useState('');
+  const [school, setSchool] = useState('');
+  const [description, setDescription] = useState('');
   const [image, setImage] = useState(null);
   const [isGrading, setIsGrading] = useState(false);
   const [grade, setGrade] = useState(null);
   const [error, setError] = useState(null);
 
-  // Real API integration replacing simulateGrading
+  const calculateCO2Impact = (score) => `${(score * 1.5).toFixed(1)}kg CO2 saved`;
+
   const handleAIGrading = async () => {
-    if (!image) return;
+    if (!image || !name || !school) {
+      setError('Please provide item name, school, and photo!');
+      return;
+    }
     
     setIsGrading(true);
     setError(null);
 
     try {
-      // Create FormData to send image file
       const formData = new FormData();
       formData.append('file', image);
+      formData.append('name', name);
+      formData.append('school', school);
+      formData.append('description', description);
 
-      // Call your FastAPI backend
       const response = await axios.post(
         'http://localhost:8000/api/donations/grade',
         formData,
-        {
-          headers: {
-            'Content-Type': 'multipart/form-data'
-          }
-        }
+        { headers: { 'Content-Type': 'multipart/form-data' } }
       );
 
-      // Map backend response to your UI format
       setGrade({
-        level: `Grade ${response.data.condition}`, // e.g., "Grade A"
-        condition: response.data.condition, // "Excellent", "Good", etc.
+        level: `Grade ${response.data.condition}`,
+        condition: response.data.condition,
         quality_score: response.data.quality_score,
-        category: response.data.category,
         feedback: response.data.feedback,
-        impact: calculateCO2Impact(response.data.quality_score), // Calculate CO2 savings
-        donation_id: response.data.donation_id // Store for later use
+        impact: calculateCO2Impact(response.data.quality_score),
+        donation_id: response.data.donation_id
       });
 
     } catch (err) {
-      console.error('Grading failed:', err);
-      setError(err.response?.data?.detail || 'Failed to grade item. Please try again.');
+      setError(err.response?.data?.detail || 'Failed to grade. Check your Backend.');
     } finally {
       setIsGrading(false);
     }
   };
 
-  // Helper function to calculate CO2 impact based on quality
-  const calculateCO2Impact = (qualityScore) => {
-    const baseCO2 = 5.2; // kg CO2 per item
-    const impact = (qualityScore / 10) * baseCO2;
-    return `${impact.toFixed(1)}kg CO2 saved`;
-  };
-
-  // Handle image selection
-  const handleImageSelect = (e) => {
-    const file = e.target.files[0];
-    if (file && file.type.startsWith('image/')) {
-      setImage(file);
-      setGrade(null); // Reset previous grade
-      setError(null);
-    } else {
-      setError('Please select a valid image file');
-    }
-  };
-
-  // Reset and take new photo
-  const handleRetake = () => {
-    setImage(null);
-    setGrade(null);
-    setError(null);
-  };
-
   return (
-    <div className="p-6 max-w-md mx-auto min-h-screen bg-white">
-      <h2 className="text-2xl font-bold mb-4">Donate Gear</h2>
-      
-      {!image ? (
-        <div className="border-4 border-dashed border-slate-100 rounded-3xl p-12 text-center">
-          <input 
-            type="file" 
-            accept="image/*" 
-            onChange={handleImageSelect}
-            className="hidden" 
-            id="upload" 
-          />
-          <label htmlFor="upload" className="cursor-pointer">
-            <Camera size={48} className="mx-auto text-blue-500 mb-4" />
-            <p className="text-slate-600 font-medium">Snap photo of gear</p>
-            <p className="text-slate-400 text-sm mt-2">Upload image for AI quality check</p>
-          </label>
-        </div>
-      ) : (
-        <div className="space-y-6">
-          <div className="relative">
-            <img 
-              src={URL.createObjectURL(image)} 
-              className="rounded-2xl w-full h-64 object-cover" 
-              alt="Gear" 
-            />
-            <button 
-              onClick={handleRetake}
-              className="absolute top-2 right-2 bg-white/90 p-2 rounded-full shadow-lg"
-            >
-              <RefreshCw size={20} />
-            </button>
-          </div>
+    <div className="min-h-screen bg-gray-50 pb-20">
+      <div className="max-w-xl mx-auto bg-white border-b sticky top-0 z-10 px-6 py-4 flex justify-between items-center shadow-sm">
+        <h1 className="font-bold text-xl">List Gear</h1>
+        {grade && <span className="text-green-600 font-bold">Graded!</span>}
+      </div>
 
-          {/* Error Display */}
-          {error && (
-            <div className="bg-red-50 border border-red-200 p-4 rounded-2xl flex items-start gap-2">
-              <AlertCircle className="text-red-600 flex-shrink-0" size={20} />
-              <p className="text-sm text-red-700">{error}</p>
-            </div>
-          )}
-          
-          {!grade ? (
-            <button 
-              onClick={handleAIGrading}
-              disabled={isGrading} 
-              className="w-full bg-blue-600 text-white py-4 rounded-xl font-bold flex justify-center items-center gap-2 disabled:opacity-50"
-            >
-              {isGrading ? <RefreshCw className="animate-spin" /> : null}
-              {isGrading ? "AI Grading in progress..." : "Run AI Quality Check"}
-            </button>
+      <div className="max-w-xl mx-auto p-6 space-y-4">
+        {/* Photo Section */}
+        <div className="bg-white rounded-2xl p-4 shadow-sm border">
+          {!image ? (
+            <label className="w-full h-64 border-2 border-dashed border-gray-200 rounded-2xl flex flex-col items-center justify-center cursor-pointer hover:bg-green-50">
+              <input type="file" accept="image/*" onChange={(e) => setImage(e.target.files[0])} className="hidden" />
+              <Camera size={40} className="text-gray-300 mb-2" />
+              <p className="text-sm text-gray-500 font-medium font-bold uppercase">Add Photo</p>
+            </label>
           ) : (
-            <div className="bg-green-50 border border-green-200 p-4 rounded-2xl animate-in fade-in slide-in-from-bottom-4">
-              <div className="flex items-center gap-2 mb-2">
-                <CheckCircle className="text-green-600" />
-                <span className="font-bold text-green-800">
-                  {grade.level}: {grade.condition}
-                </span>
-              </div>
-              
-              {/* Display AI Feedback */}
-              <p className="text-sm text-green-700 mb-2">{grade.feedback}</p>
-              
-              {/* Quality Score */}
-              <div className="flex justify-between text-sm mb-2">
-                <span className="text-green-600">Quality Score:</span>
-                <span className="font-bold text-green-800">{grade.quality_score}/10</span>
-              </div>
-              
-              {/* CO2 Impact */}
-              <div className="flex justify-between text-sm mb-4">
-                <span className="text-green-600">Environmental Impact:</span>
-                <span className="font-bold text-green-800">{grade.impact}</span>
-              </div>
-
-              <p className="text-xs text-green-600 mb-4">
-                Quality verified. This ensures recipient dignity.
-              </p>
-              
-              <button 
-                className="w-full bg-green-600 text-white py-3 rounded-lg font-bold hover:bg-green-700 transition"
-                onClick={() => {
-                  // Navigate to listing or next step
-                  console.log('Listing item with donation_id:', grade.donation_id);
-                  // You can add navigation logic here
-                }}
-              >
-                List for Next Cohort
-              </button>
+            <div className="relative h-64 rounded-2xl overflow-hidden shadow-inner">
+              <img src={URL.createObjectURL(image)} className="w-full h-full object-cover" alt="Gear" />
+              <button onClick={() => setImage(null)} className="absolute top-2 right-2 bg-black/50 text-white p-2 rounded-full">✕</button>
             </div>
           )}
         </div>
-      )}
+
+        {/* Info Section */}
+        <div className="bg-white rounded-2xl shadow-sm border divide-y divide-gray-100">
+          <div className="p-4">
+            <input type="text" placeholder="item name" className="w-full text-lg outline-none" onChange={(e) => setName(e.target.value)} />
+          </div>
+          <div className="p-4">
+            <input type="text" placeholder="school" className="w-full text-lg outline-none" onChange={(e) => setSchool(e.target.value)} />
+          </div>
+          <div className="p-4">
+            <textarea placeholder="description" className="w-full text-lg outline-none h-24 resize-none" onChange={(e) => setDescription(e.target.value)} />
+          </div>
+        </div>
+
+        {error && <div className="p-4 bg-red-50 text-red-600 rounded-xl text-sm">{error}</div>}
+
+        {!grade ? (
+          <button 
+            onClick={handleAIGrading}
+            disabled={isGrading || !image}
+            className="w-full bg-[#00b341] text-white py-4 rounded-2xl font-bold text-lg shadow-lg disabled:opacity-30 flex justify-center items-center gap-3"
+          >
+            {isGrading && <RefreshCw className="animate-spin" />}
+            {isGrading ? "Inspecting Quality..." : "List Now & Grade"}
+          </button>
+        ) : (
+          <div className="bg-green-50 border-2 border-green-100 p-6 rounded-2xl space-y-3 animate-in fade-in">
+             <div className="flex items-center gap-2 text-green-800 font-extrabold text-xl uppercase">
+               <CheckCircle /> {grade.level}
+             </div>
+             <p className="text-green-700">{grade.feedback}</p>
+             <div className="flex justify-between font-bold text-green-900 border-t border-green-200 pt-3 text-sm">
+               <span>Environmental Impact:</span>
+               <span>{grade.impact}</span>
+             </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 };
